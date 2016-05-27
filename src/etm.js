@@ -2,20 +2,24 @@
 
 const through = require('through2')
 const lpm = require('length-prefixed-stream')
+const debug = require('debug')
 
 const toForgeBuffer = require('./support').toForgeBuffer
+
+const log = debug('libp2p:secio:etm')
 
 exports.writer = function etmWriter (insecure, cipher, mac) {
   const encode = lpm.encode()
   const pt = through(function (chunk, enc, cb) {
+    log('writing', chunk.toString('hex'))
     cipher.update(toForgeBuffer(chunk))
 
     if (cipher.output.length() > 0) {
       const data = new Buffer(cipher.output.getBytes(), 'binary')
       mac.update(data)
       const macBuffer = new Buffer(mac.getMac().getBytes(), 'binary')
-
       this.push(Buffer.concat([data, macBuffer]))
+
       // reset hmac
       mac.start(null, null)
     }
@@ -54,11 +58,13 @@ exports.reader = function etmReader (insecure, decipher, mac) {
     }
 
     // all good, decrypt
+    log('reading enc', data.toString('hex'))
     decipher.update(toForgeBuffer(data))
 
     if (decipher.output.length() > 0) {
-      const data = new Buffer(decipher.output.getBytes(), 'binary')
-      this.push(data)
+      const b = new Buffer(decipher.output.getBytes(), 'binary')
+      log('reading', b.toString())
+      this.push(b)
     }
 
     cb()

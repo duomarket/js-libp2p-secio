@@ -30,10 +30,13 @@ module.exports = function exchange (session, cb) {
     return cb(err)
   }
 
-  session.insecureLp.write(exchangeOut)
+  setTimeout(() => {
+    session.insecureLp.write(exchangeOut)
+  }, 10)
   session.insecureLp.once('data', (chunk) => {
     const exchangeIn = pbm.Exchange.decode(chunk)
-
+    session.insecure.pause()
+    session.insecure.cork()
     try {
       verify(session, exchangeIn)
       keys(session, exchangeIn, genSharedKey)
@@ -62,7 +65,7 @@ function makeExchange (session) {
 }
 
 function verify (session, exchangeIn) {
-  log('2.1. verify', exchangeIn)
+  log('2.1. verify %s')
 
   session.remote.ephemeralPubKey = exchangeIn.epubkey
   const selectionIn = Buffer.concat([

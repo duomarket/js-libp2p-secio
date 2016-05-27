@@ -90,8 +90,7 @@ describe('libp2p-secio', () => {
 
     const listener = new Listener()
     const dialer = new Dialer()
-    let local
-    let remote
+
     series([
       (cb) => parallel([
         (cb) => listener.handle(pair, cb),
@@ -99,18 +98,33 @@ describe('libp2p-secio', () => {
       ], cb),
       (cb) => {
         listener.addHandler('/banana/1.0.0', (conn) => {
-          local = createSession(conn).session.secureStream()
-          local.once('data', (res) => {
-            expect(res.toString()).to.be.eql('hello world')
-            done()
+          const local = createSession(conn).session.secureStream()
+          const d2 = new Dialer()
+          d2.handle(local, (err) => {
+            if (err) throw err
+            d2.select('/apple/1.0.0', (err, conn) => {
+              if (err) throw err
+              conn.write('hello world')
+            })
           })
         })
         cb()
       },
       (cb) => dialer.select('/banana/1.0.0', (err, conn) => {
-        remote = createSession(conn).session.secureStream()
-        remote.write('hello world')
-        cb(err)
+        if (err) throw err
+        const remote = createSession(conn).session.secureStream()
+
+        const l2 = new Listener()
+        l2.handle(remote, (err) => {
+          if (err) throw err
+          l2.addHandler('/apple/1.0.0', (conn) => {
+            conn.once('data', (chunk) => {
+              expect(chunk.toString()).to.be.eql('hello world')
+              done()
+            })
+            cb()
+          })
+        })
       })
     ], (err) => {
       if (err) throw err

@@ -29,8 +29,10 @@ module.exports = function propose (session, cb) {
   session.proposal.out = proposeOut
   session.proposal.nonceOut = nonceOut
 
-  log('1. propse - writing proposal')
-  session.insecureLp.write(proposeOut)
+  log('1. propse - writing proposal', proposeOut.toString('hex'))
+  setTimeout(() => {
+    session.insecureLp.write(proposeOut)
+  }, 10)
   session.insecureLp.once('data', (chunk) => {
     log('1. propse - reading proposal')
 
