@@ -3,9 +3,6 @@
 const duplexify = require('duplexify')
 const lpstream = require('length-prefixed-stream')
 const PassThrough = require('readable-stream').PassThrough
-const debug = require('debug')
-
-const log = debug('libp2p:secio')
 
 const handshake = require('./handshake')
 
@@ -26,9 +23,6 @@ exports.SecureSession = class SecureSession {
     e.pipe(this.insecure)
     this.insecure.pipe(d)
 
-    this.insecure.on('data', (c) => {
-      log('  --', c.toString('hex'))
-    })
     if (!this.localPeer) {
       throw new Error('no local id provided')
     }
@@ -55,11 +49,9 @@ exports.SecureSession = class SecureSession {
     const originalRead = reader.read.bind(reader)
     const originalWrite = writer.write.bind(writer)
 
+    // TODO: figure a better way for this out
     dp.getObservedAddrs = this.insecure.getObservedAddrs
-    dp.end = () => {
-      log('ending')
-      dp.destroy()
-    }
+
     const doHandshake = () => {
       if (handshaked) return
 
@@ -75,8 +67,7 @@ exports.SecureSession = class SecureSession {
         }
 
         // Pipe things together
-        writer.pipe(this.secure)
-        this.secure.pipe(reader)
+        writer.pipe(this.secure).pipe(reader)
 
         dp.uncork()
         dp.resume()
