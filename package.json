@@ -30,7 +30,7 @@
     "interface-connection": "~0.3.2",
     "libp2p-crypto": "git://github.com/duomarket/js-libp2p-crypto.git",
     "multihashing-async": "~0.4.4",
-    "peer-id": "~0.8.4",
+    "peer-id": "git://github.com/duomarket/js-peer-id.git",
     "protocol-buffers": "^3.2.1",
     "pull-defer": "^0.2.2",
     "pull-handshake": "^1.1.4",
