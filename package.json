@@ -29,7 +29,7 @@
     "debug": "^2.6.3",
     "interface-connection": "~0.3.2",
     "libp2p-crypto": "git://github.com/duomarket/js-libp2p-crypto.git",
-    "multihashing-async": "~0.4.4",
+    "multihashing-async": "git://github.com/duomarket/js-multihashing-async.git",
     "peer-id": "git://github.com/duomarket/js-peer-id.git",
     "protocol-buffers": "^3.2.1",
     "pull-defer": "^0.2.2",
